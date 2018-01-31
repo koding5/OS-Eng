@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <assert.h>
+#include <error.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -61,8 +62,8 @@ runcmd(struct cmd *cmd)
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
       _exit(0);
-    fprintf(stderr, "exec not implemented\n");
-    // Your code here ...
+    execvp(ecmd->argv[0], ecmd->argv);
+    perror(ecmd->argv[0]);
     break;
 
   case '>':
