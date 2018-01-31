@@ -1,0 +1,116 @@
+LAB1:
+-------
+2. Boot Loader
+--------------
+2.a, At what point does the processor start executing 32-bit code? What exactly
+     causes the switch from 16- to 32-bit mode?
+
+     Turning on the PE bit(Protection Enable) in Control Register 0, switches
+     from real mode (16 bit mode) to protection mode (32 bit mode).
+
+2.b, What is the last instruction of the boot loader executed, and what is the
+     first instruction of the kernel it just loaded?
+
+     After loading the Kernel into the memory, boot loaders calls into the
+     function address at the location pointed by the ELF headers e_entry
+     member.
+
+     _start specifies the ELF entry point. It's entry asm label and the first
+     instruction executed is movw $0x1234,0x472.
+
+2.c, Where is the first instruction of the kernel?
+
+     It's in kern/entry.S, under the label 'entry'.
+
+2.d, How does the boot loader decide how many sectors it must read in order to
+     fetch the entire kernel from disk? Where does it find this information?
+
+     Like any other ELF file, ELF header holds the information about the number
+     of program headers in kernel ELF. Every program header in turn holds the
+     information such as, which segment the program segment should be loaded,
+     along with the segment size. Bootloader, reads the every program segment
+     with the hint provided in the program header about the size of the segment
+    , thus calculating the number of sectors to be read per sector.
+
+
+3. The Kernel
+--------------
+Exercise 6:
+	Bootloader loads the kernel at the LMA address 0x100000 and first 32
+	bytes displays on examining the memory just before jumping into
+	kernel through e_entry() is the first 32 bytes of the kernel code.
+
+Exercise 7:
+	mov     $relocated, %eax
+	jmp     *%eax
+
+	jmp will cause a system crash as it paging is not enabled yet.
+
+Exercise 8:
+	diff --git a/lib/printfmt.c b/lib/printfmt.c
+index 28e01c9..af23abe 100644
+--- a/lib/printfmt.c
++++ b/lib/printfmt.c
+@@ -206,10 +206,9 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
+                // (unsigned) octal
+                case 'o':
+                        // Replace this with your code.
+-                       putch('X', putdat);
+-                       putch('X', putdat);
+-                       putch('X', putdat);
+-                       break;
++                       num = getuint(&ap, lflag);
++                       base = 8;
++                       goto number;
+
+Formatted Printing to the Console:
+	1: cputchar() exported by console.c is used by printf()
+		cprintf()
+		   |
+		   \
+		  vcprintf()
+		     |
+		      \
+		    vprintfmt()
+		  	 |
+		    	 \
+		       putchar()
+		  	 |
+		    	 \
+			cputchar()
+
+	2: The Code block scrolls up one line to print next line. Having said
+that what if the string extends more than 80 characters ? Well it just prints single character.
+
+	3.1: In the call to cprintf(), to what does fmt point? To what does
+ap point?
+	fmt in cprintf() while called points to
+	"x %d, y %x, z %d\n" and ap is null.
+
+	3.2: List (in order of execution) each call to cons_putc, va_arg, and
+vcprintf. For cons_putc, list its argument as well. For va_arg, list what ap
+points to before and after the call. For vcprintf list the values of its two
+arguments.
+
+Exercise 9:
+	Determine where the kernel initializes its stack, and exactly where in memory its stack is located ?
+
+	        # Set the stack pointer
+        movl    $(bootstacktop),%esp
+f0100034:       bc 00 00 11 f0          mov    $0xf0110000,%esp
+
+	Kernel stack shares the kernel base. Stack top is lower address
+but grows towards upper address.
+
+	How does the kernel reserve space for its stack?
+		The space is reserved with following code:
+boot stack
+###################################################################
+        .p2align        PGSHIFT         # force page alignment
+        .globl          bootstack
+bootstack:
+        .space          KSTKSIZE
+        .globl          bootstacktop
+bootstacktop:
+
+
