@@ -24,7 +24,7 @@ struct execcmd {
 };
 
 struct redircmd {
-  int type;          // < or > 
+  int type;          // < or >
   struct cmd *cmd;   // the command to be run (e.g., an execcmd)
   char *file;        // the input/output file
   int flags;         // flags for open() indicating read or write
@@ -51,7 +51,7 @@ runcmd(struct cmd *cmd)
 
   if(cmd == 0)
     _exit(0);
-  
+
   switch(cmd->type){
   default:
     fprintf(stderr, "unknown runcmd\n");
@@ -78,7 +78,7 @@ runcmd(struct cmd *cmd)
     fprintf(stderr, "pipe not implemented\n");
     // Your code here ...
     break;
-  }    
+  }
   _exit(0);
 }
 
@@ -120,7 +120,7 @@ int
 fork1(void)
 {
   int pid;
-  
+
   pid = fork();
   if(pid == -1)
     perror("fork");
@@ -176,7 +176,7 @@ gettoken(char **ps, char *es, char **q, char **eq)
 {
   char *s;
   int ret;
-  
+
   s = *ps;
   while(s < es && strchr(whitespace, *s))
     s++;
@@ -201,7 +201,7 @@ gettoken(char **ps, char *es, char **q, char **eq)
   }
   if(eq)
     *eq = s;
-  
+
   while(s < es && strchr(whitespace, *s))
     s++;
   *ps = s;
@@ -212,7 +212,7 @@ int
 peek(char **ps, char *es, char *toks)
 {
   char *s;
-  
+
   s = *ps;
   while(s < es && strchr(whitespace, *s))
     s++;
@@ -226,7 +226,7 @@ struct cmd *parseexec(char**, char*);
 
 // make a copy of the characters in the input buffer, starting from s through es.
 // null-terminate the copy to make it a string.
-char 
+char
 *mkcopy(char *s, char *es)
 {
   int n = es - s;
@@ -305,7 +305,7 @@ parseexec(char **ps, char *es)
   int tok, argc;
   struct execcmd *cmd;
   struct cmd *ret;
-  
+
   ret = execcmd();
   cmd = (struct execcmd*)ret;
 
